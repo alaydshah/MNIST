@@ -1,25 +1,29 @@
 import numpy as np
-
 import pickle
+from neural_network import Network
+from fully_connected_layer import FCLayer
+from activation_layer import ActivationLayer
+from activation_funcs import tanh, tanh_prime, sigmoid, sigmoid_prime
+from loss_funcs import mse, mse_prime
+
+# import gzip
 # import os
 # os.system("clear")
 # import keras
 
 
-from neural_network import Network
-from fully_connected_layer import FCLayer
-from activation_layer import ActivationLayer
-from activation_funcs import tanh, tanh_prime
-from loss_funcs import mse, mse_prime
-
 
 # Function for one_hot encoding of output labels
-def one_hot_encoding(labels, num_labels=10):
-    one_hot = np.zeros((labels.shape[0], num_labels))
-    for row, col in enumerate(labels):
-        one_hot[row, col] = 1.0
-    return one_hot
+# def one_hot_encoding(labels, num_labels=10):
+#     one_hot = np.zeros((labels.shape[0], num_labels))
+#     for row, col in enumerate(labels):
+#         one_hot[row, col] = 1.0
+#     return one_hot
 
+def one_hot_encoding(label, num_labels=10):
+    one_hot_vec = np.zeros(num_labels)
+    one_hot_vec[label] = 1.0
+    return one_hot_vec
 
 def load_data(requested_data):
 
@@ -61,30 +65,42 @@ print(testing_labels.shape)
 
 # Normalizing data and One-hot encoding labels
 training_images /= 255
-training_labels = one_hot_encoding(training_labels)
+# training_labels = one_hot_encoding(training_labels)
 testing_images /= 255
-testing_labels = one_hot_encoding(testing_labels)
+# testing_labels = one_hot_encoding(testing_labels)
+
+training_inputs = [np.reshape(x, (1, 28*28)) for x in training_images]
+training_results = [one_hot_encoding(y) for y in training_labels]
+training_data = list(zip(training_inputs, training_results))
+
+testing_inputs = [np.reshape(x, (1, 28*28)) for x in testing_images]
+testing_results = testing_labels.tolist()
+testing_data = list(zip(testing_inputs, testing_results))
+
+
+# print(len(training_data))
+# print(len(testing_data))
 
 # Neural Network
 nn_net = Network()
 nn_net.add(FCLayer(28*28, 100))                 # input_shape = (1, 28x28)  ;   output_shape = (1, 100)
-nn_net.add(ActivationLayer(tanh, tanh_prime))
+nn_net.add(ActivationLayer(sigmoid, sigmoid_prime))
 nn_net.add(FCLayer(100, 50))                    # input_shape = (1, 100)    ;   output_shape = (1, 50)
-nn_net.add(ActivationLayer(tanh, tanh_prime))
+nn_net.add(ActivationLayer(sigmoid, sigmoid_prime))
 nn_net.add(FCLayer(50, 10))                     # input_shape = (1, 50)     ;   output_shape = (1, 10)
-nn_net.add(ActivationLayer(tanh, tanh_prime))
+nn_net.add(ActivationLayer(sigmoid, sigmoid_prime))
 
-# train on 1000 samples
+# train on training samples
 nn_net.use(mse, mse_prime)
-nn_net.fit(training_images[0:1000], training_labels[0:1000], epochs=35, learning_rate=0.1)
+nn_net.fit(training_data, epochs=30, mini_batch_size=10, learning_rate=5.0, test_data=testing_data)
 
-# test on 3 samples
-out = nn_net.predict(testing_images[0:3])
-print("\n")
-print("predicted values : ")
-print(out, end="\n")
-print("true values : ")
-print(testing_labels[0:3])
+# # test on 3 samples
+# out = nn_net.predict(testing_images[0:3])
+# print("\n")
+# print("predicted values : ")
+# print(out, end="\n")
+# print("true values : ")
+# print(testing_labels[0:3])
 
 
 

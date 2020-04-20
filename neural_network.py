@@ -1,3 +1,5 @@
+import random
+import numpy as np
 
 class Network:
     def __init__(self):
@@ -30,29 +32,49 @@ class Network:
 
         return result
 
+    def evaluate(self, test_data):
+        test_results = [(np.argmax(self.predict(x)), y) for (x,y) in test_data]
+        # print(test_results)
+        return sum(int(x == y) for (x,y) in test_results)
+
     # train the network
-    def fit(self, x_train, y_train, epochs, learning_rate):
+    def fit(self, training_data, epochs, mini_batch_size, learning_rate, test_data=None):
         # sample dimension first
-        samples = len(x_train)
+        if test_data:
+            n_test = len(test_data)
+
+        n_train = len(training_data)
+        n_test = len(test_data)
 
         # training loop
         for i in range(epochs):
+            random.shuffle(training_data)
+            mini_batches = [training_data[k:k+mini_batch_size] for k in range(0, n_train, mini_batch_size)]
             err = 0
-            for j in range(samples):
-                # forward propogation
-                output = x_train[j]
-                output = output[None, :]
+            for mini_batch in mini_batches:
+                for j in range(mini_batch_size):
+
+                    # forward propogation
+                    train_example = mini_batch[j]
+                    output = train_example[0]
+                    label = train_example[1]
+
+                    # output = output[None, :]
+                    for layer in self.layers:
+                        output = layer.forward_propogation(output)
+
+                    # compute loss (for display)
+                    err += self.loss(label, output)
+
+                    # backward propogation
+                    error = self.loss_prime(label, output)
+                    for layer in reversed(self.layers):
+                        error = layer.backward_propogation(error)
+
                 for layer in self.layers:
-                    output = layer.forward_propogation(output)
-
-                # compute loss (for display)
-                err += self.loss(y_train[j], output)
-
-                # backward propogation
-                error = self.loss_prime(y_train[j], output)
-                for layer in reversed(self.layers):
-                    error = layer.backward_propogation(error, learning_rate)
+                    layer.update_parameters(learning_rate, mini_batch_size)
 
             # calculate average error on all samples
-            err /= samples
-            print('epoch %d/%d error=%f' % (i+1, epochs, err))
+            err /= n_train
+            evaluation = self.evaluate(test_data)
+            print('epoch %d/%d error=%f, evaluation=%d/%d' % (i+1, epochs, err, evaluation, n_test))
