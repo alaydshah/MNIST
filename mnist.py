@@ -3,8 +3,8 @@ import pickle
 from neural_network import Network
 from fully_connected_layer import FCLayer
 from activation_layer import ActivationLayer
-from activation_funcs import tanh, tanh_prime, sigmoid, sigmoid_prime
-from loss_funcs import mse, mse_prime
+from activation_funcs import tanh, tanh_prime, sigmoid, sigmoid_prime, softmax, softmax_prime
+from loss_funcs import mse, mse_prime, log_likelihood, log_likelihood_prime
 
 # import gzip
 # import os
@@ -84,14 +84,15 @@ testing_data = list(zip(testing_inputs, testing_results))
 # Neural Network
 nn_net = Network()
 nn_net.add(FCLayer(28*28, 100))                 # input_shape = (1, 28x28)  ;   output_shape = (1, 100)
-nn_net.add(ActivationLayer(sigmoid, sigmoid_prime))
+nn_net.add(ActivationLayer(sigmoid, sigmoid_prime, 'sigmoid'))
 nn_net.add(FCLayer(100, 50))                    # input_shape = (1, 100)    ;   output_shape = (1, 50)
-nn_net.add(ActivationLayer(sigmoid, sigmoid_prime))
+nn_net.add(ActivationLayer(sigmoid, sigmoid_prime, 'sigmoid'))
 nn_net.add(FCLayer(50, 10))                     # input_shape = (1, 50)     ;   output_shape = (1, 10)
-nn_net.add(ActivationLayer(sigmoid, sigmoid_prime))
+nn_net.add(ActivationLayer(softmax, softmax_prime, 'softmax'))
+# nn_net.add(ActivationLayer(sigmoid, sigmoid_prime, 'sigmoid'))
 
 # train on training samples
-nn_net.use(mse, mse_prime)
+nn_net.use(log_likelihood, log_likelihood_prime)
 nn_net.fit(training_data, epochs=30, mini_batch_size=10, learning_rate=5.0, test_data=testing_data)
 
 # # test on 3 samples
