@@ -52,6 +52,7 @@ class Network:
             mini_batches = [training_data[k:k+mini_batch_size] for k in range(0, n_train, mini_batch_size)]
             err = 0
             for mini_batch in mini_batches:
+                batch_err = 0
                 for j in range(mini_batch_size):
 
                     # forward propogation
@@ -64,7 +65,9 @@ class Network:
                         output = layer.forward_propogation(output)
 
                     # compute loss (for display)
-                    err += self.loss(label, output)
+                    # new_err = self.loss(label, output)
+                    batch_err += self.loss(label, output)
+                    # print(new_err)
 
                     # backward propogation
                     error = self.loss_prime(label, output)
@@ -73,7 +76,8 @@ class Network:
 
                 for layer in self.layers:
                     layer.update_parameters(learning_rate, mini_batch_size)
-
+                err += batch_err
+                print(batch_err/mini_batch_size)
             # calculate average error on all samples
             err /= n_train
             evaluation = self.evaluate(test_data)

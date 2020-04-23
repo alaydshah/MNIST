@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.special
 
 # activation function and its derivative
 def tanh(x):
@@ -10,25 +11,25 @@ def tanh_prime(x):
 def sigmoid(z):
     # print(z)
     # print(np.max(z))
-    z -= np.max(z)
     # print(z)
     sig = 1.0/(1.0+np.exp(-z))
-    print(sig)
-    return
+    # print(sig)
+    return sig
 
 def sigmoid_prime(z):
     return sigmoid(z) * (1-sigmoid(z))
 
 def softmax(z):
+    expZ = np.exp(z.flatten() - np.max(z.flatten()))
+    return expZ/expZ.sum(axis=0, keepdims=True)
     # z -= np.max(z)
     # sm = (np.exp(z).T / np.sum(np.exp(z), axis=0)).T
     # print(sm.shape)
     # return sm
-    expZ = np.exp(z - np.max(z))
-    sm = expZ / np.sum(expZ)
+    # sm = scipy.special.softmax(z)
     # print(sm)
     # print(sm.shape)
-    return sm
+    # expZ = np.exp(z - np.max(z))
 
 def softmax_prime(z):
     # initialize the 2-D jacobian matrix.
@@ -44,8 +45,8 @@ def softmax_prime(z):
     #         else:
     #             jacobian_m[i][j] = -z[i] * z[j]
     # return jacobian_m
-
-    s = z.reshape(-1, 1)
-    return np.diagflat(s) - np.dot(s, s.T)
+    # print(np.diagflat(z).shape)
+    # print(np.outer(z, z.T).shape)
+    return np.diagflat(z) - np.outer(z, z.T)
 
 

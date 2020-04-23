@@ -18,11 +18,11 @@ class ActivationLayer(Layer):
     # Returns input_error=dE/dX for a given output_error=dE/dY
     # learning rate is not used because there are no learnable parameters
     def backward_propogation(self, output_error):
-        back_prop_error = None
+        # print("Output_Error: " + str(output_error))
         if self.activation_name == 'softmax':
-            gradient = self.activation_prime(self.input)
-            back_prop_error = np.dot(gradient.T, output_error)
-            back_prop_error = back_prop_error.reshape(1, 10)
+            # gradient = self.activation_prime(self.input)
+            # back_prop_error = np.dot(output_error.reshape(1,10), gradient)
+            back_prop_error = output_error.reshape(1,10)
         else:
             back_prop_error = self.activation_prime(self.input) * output_error
         # print(back_prop_error.shape)

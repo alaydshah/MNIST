@@ -93,7 +93,7 @@ nn_net.add(ActivationLayer(softmax, softmax_prime, 'softmax'))
 
 # train on training samples
 nn_net.use(log_likelihood, log_likelihood_prime)
-nn_net.fit(training_data, epochs=30, mini_batch_size=10, learning_rate=5.0, test_data=testing_data)
+nn_net.fit(training_data, epochs=30, mini_batch_size=50, learning_rate=0.1, test_data=testing_data)
 
 # # test on 3 samples
 # out = nn_net.predict(testing_images[0:3])
